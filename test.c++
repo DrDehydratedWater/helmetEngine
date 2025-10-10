@@ -5,6 +5,10 @@
 #include <SDL3_image/SDL_image.h>
 #include <memory>
 
+void process(Scene* scene) {
+
+}
+
 int main() {
     // Create the scene
     Scene scene;
@@ -26,18 +30,11 @@ int main() {
     // Create the renderer module
     RendererModule rendererModule(&renderer);
 
-    // Main loop
-    bool running = true;
-    SDL_Event event;
-    while (running) {
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_EVENT_QUIT) {
-                running = false;
-            }
-        }
-        rendererModule.main(&scene);
-        SDL_Delay(16); // ~60 FPS
-    }
+    Engine engine;
+
+    std::vector<Module*> modules = {&rendererModule};
+
+    engine.engineInit(process, &scene, modules);
 
     renderer.shutdownRenderer();
     return 0;
