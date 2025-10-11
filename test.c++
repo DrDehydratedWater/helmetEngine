@@ -1,12 +1,11 @@
 #include "engine.hpp"
 #include "renderer.hpp"
 #include "scene.hpp"
-#include <SDL3/SDL_render.h>
-#include <SDL3_image/SDL_image.h>
-#include <memory>
 
-void process(Scene* scene) {
-
+void process(Scene* scene, double deltaTime) {
+    for (auto &object : scene->objects) {
+        object->position.x += 0.1 * deltaTime;
+    }
 }
 
 int main() {
@@ -22,7 +21,7 @@ int main() {
     sprite->id = "sprite1";
     sprite->position = {0, 0};
     sprite->size = {64, 64}; // Set a default size
-    sprite->texture = IMG_LoadTexture(renderer.renderer, "sample.png");
+    sprite->texture = IMG_LoadTexture(renderer.SDLRenderer, "sample.png");
 
     // Add sprite to the scene
     scene.addObject(std::move(sprite));
@@ -30,12 +29,11 @@ int main() {
     // Create the renderer module
     RendererModule rendererModule(&renderer);
 
+    // Create engine
     Engine engine;
 
-    std::vector<Module*> modules = {&rendererModule};
-
-    engine.engineInit(process, &scene, modules);
-
-    renderer.shutdownRenderer();
+    // Initialize engine
+    engine.engineInit(process, &scene, {&rendererModule});
+    
     return 0;
 }

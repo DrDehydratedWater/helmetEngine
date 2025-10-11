@@ -17,19 +17,19 @@ public:
 
 class Renderer {
 public:
-  SDL_Renderer *renderer = NULL;
-  SDL_Window *window = NULL;
+  SDL_Renderer *SDLRenderer = NULL;
+  SDL_Window *SDLWindow = NULL;
 
   bool rendererInit(const char *title, int width, int height) {
-    window = SDL_CreateWindow(title, width, height, 0);
+    SDLWindow = SDL_CreateWindow(title, width, height, 0);
 
-    renderer = SDL_CreateRenderer(window, 0);
+    SDLRenderer = SDL_CreateRenderer(SDLWindow, 0);
 
     return true;
   }
 
   void drawSprite(const Sprite &sprite) {
-    if (!renderer || !sprite.texture)
+    if (!SDLRenderer || !sprite.texture)
       return;
 
     SDL_FRect dst;
@@ -38,21 +38,25 @@ public:
     dst.w = sprite.size.x;
     dst.h = sprite.size.x;
 
-    SDL_RenderTexture(renderer, sprite.texture, nullptr, &dst);
+    SDL_RenderTexture(SDLRenderer, sprite.texture, nullptr, &dst);
   }
 
-  void shutdownRenderer() { SDL_Quit(); }
+  void shutdownRenderer() {
+    SDL_Quit();
+  }
 };
 
 class RendererModule : public Module {
 public:
-  Renderer* renderer; // Set this to your renderer instance
+  Renderer* renderer;
 
   RendererModule(Renderer* r) : renderer(r) {}
 
+  void startup(Scene* scene) override {}
+
   void main(Scene* scene) override {
-    SDL_SetRenderDrawColor(renderer->renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer->renderer);
+    SDL_SetRenderDrawColor(renderer->SDLRenderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer->SDLRenderer);
 
     for (const auto& obj : scene->objects) {
       if (auto sprite = dynamic_cast<Sprite*>(obj.get())) {
@@ -60,6 +64,10 @@ public:
       }
     }
 
-    SDL_RenderPresent(renderer->renderer);
+    SDL_RenderPresent(renderer->SDLRenderer);
+  }
+
+  void shutdown(Scene* scene) override {
+    renderer->shutdownRenderer();
   }
 };
