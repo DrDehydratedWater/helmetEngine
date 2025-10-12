@@ -1,39 +1,60 @@
 #include "engine.hpp"
-#include "renderer.hpp"
 #include "scene.hpp"
+#include "modules/input.hpp"
+#include "modules/renderer.hpp"
+#include <iostream>
 
-void process(Scene* scene, double deltaTime) {
-    for (auto &object : scene->objects) {
-        object->position.x += 0.1 * deltaTime;
+void process(Engine* engine, double deltaTime) {
+  Input* input = nullptr;
+
+  for (Module* mod : engine->modules) {
+    if (auto im = dynamic_cast<InputModule*>(mod)) {
+      input = im->input;
+      break;
     }
+  }
+
+  Sprite* player;
+
+  auto it = engine->scene->findObject("player");
+  if (it != engine->scene->objects.end()) {
+    player = dynamic_cast<Sprite*>(it->get());
+    if (!player) {
+        std::cout << "Player not found!";
+    }
+  }
+
+  if (input->isKeyDown(SDLK_W)) {
+    player->position.x += 0.05;
+  }
 }
 
 int main() {
-    // Create the scene
-    Scene scene;
+  Scene scene;
 
-    // Create the renderer
-    Renderer renderer;
-    renderer.rendererInit("Sprite Test", 400, 400);
 
-    // Load the sprite
-    auto sprite = std::make_unique<Sprite>();
-    sprite->id = "sprite1";
-    sprite->position = {0, 0};
-    sprite->size = {64, 64}; // Set a default size
-    sprite->texture = IMG_LoadTexture(renderer.SDLRenderer, "sample.png");
+  Renderer renderer;
+  renderer.rendererInit("Sprite Test", 400, 400);
 
-    // Add sprite to the scene
-    scene.addObject(std::move(sprite));
 
-    // Create the renderer module
-    RendererModule rendererModule(&renderer);
+  auto sprite = std::make_unique<Sprite>();
+  sprite->id = "player";
+  sprite->position = {0, 0};
+  sprite->size = {64, 64};
+  sprite->texture = IMG_LoadTexture(renderer.SDLRenderer, "sample.png");
 
-    // Create engine
-    Engine engine;
+  scene.addObject(std::move(sprite));
+  
 
-    // Initialize engine
-    engine.engineInit(process, &scene, {&rendererModule});
-    
-    return 0;
+  RendererModule rendererModule(&renderer);
+
+  Input input;
+  InputModule inputModule(&input);
+
+
+  Engine engine;
+
+  engine.engineInit(process, &scene, {&rendererModule, &inputModule});
+
+  return 0;
 }

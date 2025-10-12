@@ -1,7 +1,7 @@
 #pragma once
 
-#include "scene.hpp"
-#include "engine.hpp"
+#include "../scene.hpp"
+#include "../engine.hpp"
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
@@ -52,13 +52,13 @@ public:
 
   RendererModule(Renderer* r) : renderer(r) {}
 
-  void startup(Scene* scene) override {}
+  void startup(Engine* engine) override {}
 
-  void main(Scene* scene) override {
+  void main(Engine* engine) override {
     SDL_SetRenderDrawColor(renderer->SDLRenderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer->SDLRenderer);
 
-    for (const auto& obj : scene->objects) {
+    for (const auto& obj : engine->scene->objects) {
       if (auto sprite = dynamic_cast<Sprite*>(obj.get())) {
         renderer->drawSprite(*sprite);
       }
@@ -67,7 +67,7 @@ public:
     SDL_RenderPresent(renderer->SDLRenderer);
   }
 
-  void shutdown(Scene* scene) override {
+  void shutdown(Engine* engine) override {
     renderer->shutdownRenderer();
   }
 };
