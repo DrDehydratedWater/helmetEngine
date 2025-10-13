@@ -5,27 +5,23 @@
 #include <iostream>
 
 void process(Engine* engine, double deltaTime) {
-  Input* input = nullptr;
+  InputModule* inputModule = dynamic_cast<InputModule*>(*engine->findModule<InputModule>());
 
-  for (Module* mod : engine->modules) {
-    if (auto im = dynamic_cast<InputModule*>(mod)) {
-      input = im->input;
-      break;
-    }
+  Sprite* player = dynamic_cast<Sprite*>(engine->scene->findObject("player")->get());
+  
+  double speed = 0.05;
+
+  if (inputModule->input->isKeyDown(SDLK_W)) {
+    player->position.y -= speed;
   }
-
-  Sprite* player;
-
-  auto it = engine->scene->findObject("player");
-  if (it != engine->scene->objects.end()) {
-    player = dynamic_cast<Sprite*>(it->get());
-    if (!player) {
-        std::cout << "Player not found!";
-    }
+  if (inputModule->input->isKeyDown(SDLK_S)) {
+    player->position.y += speed;
   }
-
-  if (input->isKeyDown(SDLK_W)) {
-    player->position.x += 0.05;
+  if (inputModule->input->isKeyDown(SDLK_D)) {
+    player->position.x += speed;
+  }
+  if (inputModule->input->isKeyDown(SDLK_A)) {
+    player->position.x -= speed;
   }
 }
 
@@ -34,13 +30,13 @@ int main() {
 
 
   Renderer renderer;
-  renderer.rendererInit("Sprite Test", 400, 400);
+  renderer.rendererInit("Sprite Test", 1000, 1000);
 
 
   auto sprite = std::make_unique<Sprite>();
   sprite->id = "player";
   sprite->position = {0, 0};
-  sprite->size = {64, 64};
+  sprite->size = {128, 128};
   sprite->texture = IMG_LoadTexture(renderer.SDLRenderer, "sample.png");
 
   scene.addObject(std::move(sprite));

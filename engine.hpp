@@ -37,6 +37,13 @@ public:
     engineProcess();
   }
 
+  template <typename T>
+  auto findModule() {
+    return std::find_if(
+      modules.begin(), modules.end(), 
+      [](Module* module) {return dynamic_cast<T*>(module) != nullptr;});
+  }
+
 private:
   double deltaTime;
 
