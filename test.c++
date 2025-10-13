@@ -23,6 +23,12 @@ void process(Engine* engine, double deltaTime) {
   if (inputModule->input->isKeyDown(SDLK_A)) {
     player->position.x -= speed;
   }
+  if (inputModule->input->isKeyDown(SDLK_F)) {
+    player->size += {0.005, 0.005};
+  }
+  if (inputModule->input->isKeyDown(SDLK_G)) {
+    player->size -= {0.005, 0.005};
+  }
 }
 
 int main() {
