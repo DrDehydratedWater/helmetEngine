@@ -9,9 +9,9 @@ class Engine;
 
 class Module {
 public:
-  virtual void startup(Engine*) = 0;
-  virtual void main(Engine*) = 0;
-  virtual void shutdown(Engine*) = 0;
+  virtual void startup(Engine*) {};
+  virtual void main(Engine*) {};
+  virtual void shutdown(Engine*) {};
 
   virtual ~Module() = default;
 };

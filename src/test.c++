@@ -2,61 +2,67 @@
 #include "scene.hpp"
 #include "modules/input.hpp"
 #include "modules/renderer.hpp"
+#include "modules/audio.hpp"
 #include <iostream>
 
 void process(Engine* engine, double deltaTime) {
   InputModule* inputModule = dynamic_cast<InputModule*>(*engine->findModule<InputModule>());
 
   Sprite* player = dynamic_cast<Sprite*>(engine->scene->findObject("player")->get());
+
+  AudioModule* audioModule = dynamic_cast<AudioModule*>(*engine->findModule<AudioModule>());
   
   double speed = 0.05;
 
-  if (inputModule->input->isKeyDown(SDLK_W)) {
+  if (inputModule->isKeyDown(SDLK_W)) {
     player->position.y -= speed;
   }
-  if (inputModule->input->isKeyDown(SDLK_S)) {
+  if (inputModule->isKeyDown(SDLK_S)) {
     player->position.y += speed;
   }
-  if (inputModule->input->isKeyDown(SDLK_D)) {
+  if (inputModule->isKeyDown(SDLK_D)) {
     player->position.x += speed;
   }
-  if (inputModule->input->isKeyDown(SDLK_A)) {
+  if (inputModule->isKeyDown(SDLK_A)) {
     player->position.x -= speed;
   }
-  if (inputModule->input->isKeyDown(SDLK_F)) {
+  if (inputModule->isKeyDown(SDLK_F)) {
+    if (audioModule->isPlaying("..resources/sample.wav") == false) {
+      audioModule->playAudio("../resources/sample.wav");
+    } else {
+      audioModule->closeAudio();
+    }
     player->size += {0.005, 0.005};
   }
-  if (inputModule->input->isKeyDown(SDLK_G)) {
+  if (inputModule->isKeyDown(SDLK_G)) {
     player->size -= {0.005, 0.005};
   }
 }
 
 int main() {
+  RendererModule rendererModule;
+  rendererModule.rendererInit("Sprite Test", 1000, 1000);
+
+  AudioModule audioModule;
+  audioModule.audioInit();
+  
+  InputModule inputModule;
+
+
   Scene scene;
-
-
-  Renderer renderer;
-  renderer.rendererInit("Sprite Test", 1000, 1000);
-
 
   auto sprite = std::make_unique<Sprite>();
   sprite->id = "player";
   sprite->position = {0, 0};
   sprite->size = {128, 128};
-  sprite->texture = IMG_LoadTexture(renderer.SDLRenderer, "sample.png");
+  sprite->texture = IMG_LoadTexture(rendererModule.SDLRenderer, "../resources/icon.png");
 
   scene.addObject(std::move(sprite));
-  
-
-  RendererModule rendererModule(&renderer);
-
-  Input input;
-  InputModule inputModule(&input);
 
 
   Engine engine;
 
-  engine.engineInit(process, &scene, {&rendererModule, &inputModule});
+  engine.engineInit(process, &scene, {&rendererModule, &inputModule, &audioModule});
 
   return 0;
 }

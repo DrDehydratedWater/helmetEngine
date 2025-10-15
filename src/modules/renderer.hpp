@@ -2,8 +2,6 @@
 
 #include "../scene.hpp"
 #include "../engine.hpp"
-#include <SDL3/SDL_init.h>
-#include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
 #include <SDL3_image/SDL_image.h>
@@ -15,11 +13,12 @@ public:
   Vec2 size;
 };
 
-class Renderer {
+class RendererModule : public Module {
 public:
   SDL_Renderer *SDLRenderer = NULL;
   SDL_Window *SDLWindow = NULL;
 
+  
   bool rendererInit(const char *title, int width, int height) {
     SDLWindow = SDL_CreateWindow(title, width, height, 0);
 
@@ -44,30 +43,22 @@ public:
   void shutdownRenderer() {
     SDL_Quit();
   }
-};
 
-class RendererModule : public Module {
-public:
-  Renderer* renderer;
-
-  RendererModule(Renderer* r) : renderer(r) {}
-
-  void startup(Engine* engine) override {}
 
   void main(Engine* engine) override {
-    SDL_SetRenderDrawColor(renderer->SDLRenderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer->SDLRenderer);
+    SDL_SetRenderDrawColor(SDLRenderer, 0, 0, 0, 255);
+    SDL_RenderClear(SDLRenderer);
 
     for (const auto& obj : engine->scene->objects) {
       if (auto sprite = dynamic_cast<Sprite*>(obj.get())) {
-        renderer->drawSprite(*sprite);
+        drawSprite(*sprite);
       }
     }
 
-    SDL_RenderPresent(renderer->SDLRenderer);
+    SDL_RenderPresent(SDLRenderer);
   }
 
   void shutdown(Engine* engine) override {
-    renderer->shutdownRenderer();
+    shutdownRenderer();
   }
 };
