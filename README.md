@@ -1,4 +1,4 @@
-![Icon](icon.png)
+![Icon](resources/icon.png)
 
 # Info
 
