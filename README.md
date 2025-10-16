@@ -1,4 +1,4 @@
-![Icon](sample.png)
+![Icon](icon.png)
 
 # Info
 
