@@ -1,5 +1,6 @@
+#pragma once
 #include <SDL3/SDL.h>
-#include "../engine.hpp"
+#include "../../engine.hpp"
 #include <string>
 
 class AudioModule : public Module {
@@ -14,23 +15,7 @@ public:
     SDL_Init(SDL_INIT_AUDIO);
   }
 
-  void closeAudio() {
-    if (stream) {
-        stream = nullptr;
-    }
-
-    if (buffer) {
-        SDL_free(buffer);
-        buffer = nullptr;
-    }
-  }
-
   void playAudio(const char* path) {
-    if (isPlaying(path)) {
-        // Already playing this file, do nothing
-        return;
-    }
-
     SDL_zero(spec);
     spec.freq = 44100;
     spec.format = SDL_AUDIO_F32LE;
@@ -52,17 +37,20 @@ public:
     SDL_ResumeAudioStreamDevice(stream);
   }
 
+
   void main(Engine* engine) override {
     if (SDL_GetAudioStreamQueued(stream) < (int)length) {
       SDL_PutAudioStreamData(stream, buffer, length);
+      buffer = nullptr;
     }
   }
 
-  bool isPlaying(const char* path) {
-    return (currentFile == path) && (SDL_GetAudioStreamQueued(stream) > 0);
+  void shutdown(Engine* engine) override {
+    SDL_free(buffer);
   }
 
-  ~AudioModule() {
-    SDL_free(buffer);
+
+  bool isPlaying(const char* path) {
+    return (currentFile == path) && (SDL_GetAudioStreamQueued(stream) > 0);
   }
 };

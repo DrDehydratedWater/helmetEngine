@@ -1,6 +1,7 @@
 #pragma once
 
 #include "scene.hpp"
+#include "logger.hpp"
 #include <functional>
 #include <chrono>
 #include <SDL3/SDL_events.h>
@@ -26,14 +27,19 @@ public:
   bool running = true;
 
   void engineInit(std::function<void(Engine*, double)> inputProcess, Scene *inputScene, std::vector<Module*> inputModules = {}) {
+    Logger::Log("\n-- Initializing engine! --\n");
+
     process = inputProcess;
     scene = inputScene;
     modules = inputModules;
 
+    Logger::Log("\n-- Initializing modules! --\n");
     for (Module* module : modules) {
+      Logger::Log("Initializing module: " + std::string(typeid(*module).name()).substr(2) + "\n");
       module->startup(this);
     }
 
+    Logger::Log("\n-- Initialization finished! --\n");
     engineProcess();
   }
 

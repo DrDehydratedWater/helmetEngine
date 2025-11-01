@@ -1,4 +1,5 @@
-#include "../engine.hpp"
+#pragma once
+#include "../../engine.hpp"
 
 class InputModule : public Module {
 public:

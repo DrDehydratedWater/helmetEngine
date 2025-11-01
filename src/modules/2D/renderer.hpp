@@ -1,16 +1,18 @@
 #pragma once
 
-#include "../scene.hpp"
-#include "../engine.hpp"
+#include "../../scene.hpp"
+#include "../../engine.hpp"
+#include "node.hpp"
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
 #include <SDL3_image/SDL_image.h>
-#include <dehydrated/math/vector.h>
+#include "../../util/math/Vec2.hpp"
 
-class Sprite : public GameObject {
+class Sprite : public Node {
 public:
   SDL_Texture *texture;
   Vec2 size;
+  bool visible;
 };
 
 class RendererModule : public Module {
@@ -23,6 +25,8 @@ public:
     SDLWindow = SDL_CreateWindow(title, width, height, 0);
 
     SDLRenderer = SDL_CreateRenderer(SDLWindow, 0);
+
+    SDL_SetWindowIcon(SDLWindow, IMG_Load("../resources/icon.png"));
 
     return true;
   }
