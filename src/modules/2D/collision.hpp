@@ -12,6 +12,10 @@ public:
 };
 
 class CollisionModule : public Module {
+public:
+  CollisionModule() : Module("CollisionModule") {}
+
+
   static bool isColliding(const PhysicsObject& obj1, const PhysicsObject& obj2) {
     if (obj1.position.x + obj1.size.x >= obj2.position.x &&
         obj1.position.x <= obj2.position.x + obj2.size.x &&
@@ -26,7 +30,7 @@ class CollisionModule : public Module {
         physicsObject->position += physicsObject->velocity;
         for (auto child : physicsObject->children) {
           if (auto node = dynamic_cast<Node*>(child)) {
-            node->position = physicsObject->position;
+            node->position = physicsObject->position + node->localPosition;
           }
         }
       }
@@ -42,7 +46,7 @@ class CollisionModule : public Module {
               physicsObject1->position -= physicsObject1->velocity;
               for (auto child : physicsObject1->children) {
                 if (auto node = dynamic_cast<Node*>(child)) {
-                  node->position = physicsObject1->position;
+                  node->position = physicsObject1->position + node->localPosition;
                 }
               }
             }

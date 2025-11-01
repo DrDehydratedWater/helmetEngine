@@ -5,6 +5,8 @@
 
 class AudioModule : public Module {
 public:
+  AudioModule() : Module("AudioModule") {}
+
   SDL_AudioStream* stream = nullptr;
   SDL_AudioSpec spec;
   Uint8* buffer = nullptr;

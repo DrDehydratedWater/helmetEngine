@@ -4,15 +4,18 @@
 #include "modules/2D/renderer.hpp"
 #include "modules/2D/audio.hpp"
 #include "modules/2D/collision.hpp"
+#include "util/logger.hpp"
+#include "util/uniqueHelper.hpp"
 #include <iostream>
 
-void process(Engine* engine, double deltaTime) {
-  InputModule* inputModule = dynamic_cast<InputModule*>(*engine->findModule<InputModule>());
-  
-  PhysicsObject* player = dynamic_cast<PhysicsObject*>(engine->scene->findObject("player")->get());
-  Sprite* playerSprite = dynamic_cast<Sprite*>(engine->scene->findObject("playerSprite")->get());
+bool Logger::enabled = true;
 
-  AudioModule* audioModule = dynamic_cast<AudioModule*>(*engine->findModule<AudioModule>());
+void process(Engine* engine, double deltaTime) {
+  static auto* inputModule = engine->getModule<InputModule>("InputModule");
+  static auto* audioModule = engine->getModule<AudioModule>("AudioModule");
+
+  static auto* player = engine->scene->getObject<PhysicsObject>("player");
+  static auto* playerSprite = engine->scene->getObject<Sprite>("playerSprite");
   
   double speed = 0.05;
 
@@ -41,18 +44,18 @@ void process(Engine* engine, double deltaTime) {
     playerSprite->size -= {0.005, 0.005};
     player->size -= {0.005, 0.005};
   }
+  if (inputModule->isKeyDown(SDLK_Q)) {
+    engine->shutdown();
+  }
 }
 
 int main() {
-  RendererModule rendererModule;
-  rendererModule.rendererInit("Sprite Test", 1000, 1000);
+  auto rendererModule = std::make_unique<RendererModule>();
+  auto audioModule = std::make_unique<AudioModule>();
 
-  AudioModule audioModule;
-  audioModule.audioInit();
+  rendererModule->rendererInit("Sprite Test", 1000, 1000);
+  audioModule->audioInit();
   
-  InputModule inputModule;
-
-  CollisionModule collisionModule;
 
   Scene scene;
 
@@ -64,8 +67,9 @@ int main() {
   auto sprite = std::make_unique<Sprite>();
   sprite->id = "playerSprite";
   sprite->position = {0, 0};
+  sprite->localPosition = {50, 50};
   sprite->size = {128, 128};
-  sprite->texture = IMG_LoadTexture(rendererModule.SDLRenderer, "../resources/icon.png");
+  sprite->texture = IMG_LoadTexture(rendererModule->SDLRenderer, "../resources/icon.png");
 
   player->addObject(sprite.get());
 
@@ -79,7 +83,7 @@ int main() {
   staticSprite->id = "staticSprite";
   staticSprite->position = staticObj->position;
   staticSprite->size = {128, 128};
-  staticSprite->texture = IMG_LoadTexture(rendererModule.SDLRenderer, "../resources/icon.png");
+  staticSprite->texture = IMG_LoadTexture(rendererModule->SDLRenderer, "../resources/icon.png");
 
   staticObj->addObject(staticSprite.get());
 
@@ -90,7 +94,14 @@ int main() {
 
   Engine engine;
 
-  engine.engineInit(process, &scene, {&audioModule, &rendererModule, &inputModule, &collisionModule});
+  engine.engineInit(process, &scene,
+  make_unique_vector<Module>(
+    std::move(rendererModule),
+    std::move(audioModule),
+    std::make_unique<InputModule>(),
+    std::make_unique<CollisionModule>()
+    )
+  );
 
   return 0;
 }

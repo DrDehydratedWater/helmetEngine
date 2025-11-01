@@ -1,7 +1,7 @@
-Test: src/test.c++
+Test: src/test.cpp
 	@make --no-print-directory compile
 	mkdir -p build
-	g++ src/test.c++ -o build/test -lSDL3 -lSDL3_image
+	g++ src/test.cpp -o build/test -lSDL3 -lSDL3_image
 	cd build && echo && ./test
 
 compile:

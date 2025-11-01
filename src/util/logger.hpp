@@ -3,7 +3,9 @@
 
 class Logger {
 public:
+  static bool enabled;
+
   static void Log(std::string s) {
-    std::cout << s;
+    if (enabled) std::cout << s;
   }
 };

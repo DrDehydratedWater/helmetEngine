@@ -17,6 +17,8 @@ public:
 
 class RendererModule : public Module {
 public:
+  RendererModule() : Module("RendererModule") {}
+
   SDL_Renderer *SDLRenderer = NULL;
   SDL_Window *SDLWindow = NULL;
 
@@ -39,7 +41,7 @@ public:
     dst.x = sprite.position.x;
     dst.y = sprite.position.y;
     dst.w = sprite.size.x;
-    dst.h = sprite.size.x;
+    dst.h = sprite.size.y;
 
     SDL_RenderTexture(SDLRenderer, sprite.texture, nullptr, &dst);
   }
