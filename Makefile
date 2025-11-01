@@ -1,8 +1,8 @@
-Test: src/test.cpp
+Test: src/examples/collisionTest.cpp
 	@make --no-print-directory compile
 	mkdir -p build
-	g++ src/test.cpp -o build/test -lSDL3 -lSDL3_image
-	cd build && echo && ./test
+	g++ src/examples/collisionTest.cpp -o build/collisionTest -lSDL3 -lSDL3_image
+	cd build && echo && ./collisionTest
 
 compile:
 	@echo "-- Compiling file --"

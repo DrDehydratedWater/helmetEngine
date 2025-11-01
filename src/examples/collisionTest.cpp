@@ -1,11 +1,11 @@
-#include "engine.hpp"
-#include "scene.hpp"
-#include "modules/2D/input.hpp"
-#include "modules/2D/renderer.hpp"
-#include "modules/2D/audio.hpp"
-#include "modules/2D/collision.hpp"
-#include "util/logger.hpp"
-#include "util/uniqueHelper.hpp"
+#include "../engine.hpp"
+#include "../scene.hpp"
+#include "../modules/2D/input.hpp"
+#include "../modules/2D/renderer.hpp"
+#include "../modules/2D/audio.hpp"
+#include "../modules/2D/collision.hpp"
+#include "../util/logger.hpp"
+#include "../util/uniqueHelper.hpp"
 #include <iostream>
 
 bool Logger::enabled = true;
@@ -67,7 +67,7 @@ int main() {
   auto sprite = std::make_unique<Sprite>();
   sprite->id = "playerSprite";
   sprite->position = {0, 0};
-  sprite->localPosition = {50, 50};
+  sprite->localPosition = {0, 0};
   sprite->size = {128, 128};
   sprite->texture = IMG_LoadTexture(rendererModule->SDLRenderer, "../resources/icon.png");
 
