@@ -1,7 +1,7 @@
 Test: src/examples/collisionTest.cpp
 	@make --no-print-directory compile
 	mkdir -p build
-	g++ src/examples/collisionTest.cpp -o build/collisionTest -lSDL3 -lSDL3_image
+	g++ src/examples/collisionTest.cpp -o build/collisionTest -lSDL3 -lSDL3_image -lSDL3_mixer
 	cd build && echo && ./collisionTest
 
 compile:

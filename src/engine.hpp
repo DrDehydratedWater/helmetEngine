@@ -34,6 +34,7 @@ public:
 
   bool running = true;
 
+  /// Takes a function to be ran every frame, a scene and a vector of unique pointers to module objects.
   void engineInit(std::function<void(Engine*, double)> inputProcess, Scene *inputScene, std::vector<std::unique_ptr<Module>> inputModules = {}) {
     profiler.start("\nEngine initialization");
     Logger::Log("\n-- Initializing engine! --\n");

@@ -33,8 +33,8 @@ void process(Engine* engine, double deltaTime) {
     player->velocity.x = -speed;
   }
   if (inputModule->isKeyDown(SDLK_F)) {
-    if (!audioModule->isPlaying("../resources/sample.wav")) {
-      audioModule->playAudio("../resources/sample.wav");
+    if (!audioModule->isChannelPlaying(0)) {
+      audioModule->playSFX(0, "../resources/sample.wav", 0);
     }
     playerSprite->size += {0.005, 0.005};
     player->size += {0.005, 0.005};
