@@ -27,7 +27,7 @@ public:
   void main(Engine* engine) override {
     for (auto& obj : engine->scene->objects) {
       if (auto physicsObject = dynamic_cast<PhysicsObject*>(obj.get())) {
-        physicsObject->position += physicsObject->velocity;
+        physicsObject->position += physicsObject->velocity * engine->deltaTime;
         for (auto child : physicsObject->children) {
           if (auto node = dynamic_cast<Node*>(child)) {
             node->position = physicsObject->position + node->localPosition;
@@ -43,7 +43,7 @@ public:
           auto& obj2 = engine->scene->objects.at(j);
           if (auto physicsObject2 = dynamic_cast<PhysicsObject*>(obj2.get())) {
             if (isColliding(*physicsObject1, *physicsObject2)) {
-              physicsObject1->position -= physicsObject1->velocity;
+              physicsObject1->position -= physicsObject1->velocity * engine->deltaTime;
               for (auto child : physicsObject1->children) {
                 if (auto node = dynamic_cast<Node*>(child)) {
                   node->position = physicsObject1->position + node->localPosition;

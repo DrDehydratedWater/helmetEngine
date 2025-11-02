@@ -6,7 +6,6 @@
 #include "../modules/2D/collision.hpp"
 #include "../util/logger.hpp"
 #include "../util/uniqueHelper.hpp"
-#include <iostream>
 
 bool Logger::enabled = true;
 
@@ -17,7 +16,7 @@ void process(Engine* engine, double deltaTime) {
   static auto* player = engine->scene->getObject<PhysicsObject>("player");
   static auto* playerSprite = engine->scene->getObject<Sprite>("playerSprite");
   
-  double speed = 0.05;
+  double speed = 0.5;
 
   player->velocity = {0, 0};
 

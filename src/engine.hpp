@@ -2,6 +2,7 @@
 
 #include "scene.hpp"
 #include "util/logger.hpp"
+#include "util/profiler.hpp"
 #include <functional>
 #include <chrono>
 #include <SDL3/SDL_events.h>
@@ -27,10 +28,14 @@ public:
   std::function<void(Engine*, double)> process;
   Scene *scene;
   SDL_Event event;
+  Profiler profiler;
+
+  double deltaTime;
 
   bool running = true;
 
   void engineInit(std::function<void(Engine*, double)> inputProcess, Scene *inputScene, std::vector<std::unique_ptr<Module>> inputModules = {}) {
+    profiler.start("\nEngine initialization");
     Logger::Log("\n-- Initializing engine! --\n");
 
     process = inputProcess;
@@ -44,6 +49,8 @@ public:
     }
 
     Logger::Log("\n-- Initialization finished! --\n");
+    profiler.stop("\nEngine initialization");
+    profiler.printTimes("\nEngine initialization");
     engineProcess();
   }
 
@@ -64,18 +71,23 @@ public:
   }
 
   void shutdown() {
+    profiler.start("\nShutting down engine");
     Logger::Log("\n-- Shutting down engine --\n");
     running = false;
     Logger::Log("\n-- Shutting down modules --\n");
     for (auto it = modules.rbegin(); it != modules.rend(); ++it) {
-      Logger::Log("Shutting down module: " + (*it)->id + "\n");
-      (*it)->shutdown(this);
+      std::unique_ptr<Module>& module = (*it);
+
+      Logger::Log("Shutting down module: " + module->id + "\n");
+      module->shutdown(this);
+
+      profiler.printAverage(module->id);
     }
+    profiler.stop("\nShutting down engine");
+    profiler.printTimes("\nShutting down engine");
   }
 
 private:
-  double deltaTime;
-
   void engineProcess() {
     while (running) {
       auto start = std::chrono::high_resolution_clock::now();
@@ -84,7 +96,9 @@ private:
       process(this, deltaTime);
 
       for (std::unique_ptr<Module>& module : modules) {
+        profiler.start(module->id);
         module->main(this);
+        profiler.stop(module->id);
       }
 
 
