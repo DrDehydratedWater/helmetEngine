@@ -8,6 +8,7 @@
 #include "../util/uniqueHelper.hpp"
 
 bool Logger::enabled = true;
+bool Profiler::enabled = true;
 
 void process(Engine* engine, double deltaTime) {
   static auto* inputModule = engine->getModule<InputModule>("InputModule");
@@ -34,7 +35,7 @@ void process(Engine* engine, double deltaTime) {
   }
   if (inputModule->isKeyDown(SDLK_F)) {
     if (!audioModule->isChannelPlaying(0)) {
-      audioModule->playSFX(0, "../resources/sample.wav", 0);
+      audioModule->playSFX(0, "../resources/sample.wav", 1);
     }
     playerSprite->size += {0.005, 0.005};
     player->size += {0.005, 0.005};
@@ -49,12 +50,7 @@ void process(Engine* engine, double deltaTime) {
 }
 
 int main() {
-  auto rendererModule = std::make_unique<RendererModule>();
-  auto audioModule = std::make_unique<AudioModule>();
-
-  rendererModule->rendererInit("Sprite Test", 1000, 1000);
-  audioModule->audioInit();
-  
+  auto rendererModule = std::make_unique<RendererModule>("Sprite Test", 1000, 1000);
 
   Scene scene;
 
@@ -96,7 +92,7 @@ int main() {
   engine.engineInit(process, &scene,
   make_unique_vector<Module>(
     std::move(rendererModule),
-    std::move(audioModule),
+    std::make_unique<AudioModule>(),
     std::make_unique<InputModule>(),
     std::make_unique<CollisionModule>()
     )

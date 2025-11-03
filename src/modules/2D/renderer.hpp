@@ -17,7 +17,10 @@ public:
 
 class RendererModule : public Module {
 public:
-  RendererModule() : Module("RendererModule") {}
+  RendererModule(const char* title, int width, int height) 
+      : Module("RendererModule") {
+    rendererInit(title, width, height);
+  }
 
   SDL_Renderer *SDLRenderer = NULL;
   SDL_Window *SDLWindow = NULL;

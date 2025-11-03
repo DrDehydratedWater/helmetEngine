@@ -28,7 +28,6 @@ public:
   std::function<void(Engine*, double)> process;
   Scene *scene;
   SDL_Event event;
-  Profiler profiler;
 
   double deltaTime;
 
@@ -36,7 +35,7 @@ public:
 
   /// Takes a function to be ran every frame, a scene and a vector of unique pointers to module objects.
   void engineInit(std::function<void(Engine*, double)> inputProcess, Scene *inputScene, std::vector<std::unique_ptr<Module>> inputModules = {}) {
-    profiler.start("\nEngine initialization");
+    Profiler::start("\nEngine initialization");
     Logger::Log("\n-- Initializing engine! --\n");
 
     process = inputProcess;
@@ -50,8 +49,8 @@ public:
     }
 
     Logger::Log("\n-- Initialization finished! --\n");
-    profiler.stop("\nEngine initialization");
-    profiler.printTimes("\nEngine initialization");
+    Profiler::stop("\nEngine initialization");
+    Profiler::printTimes("\nEngine initialization");
     engineProcess();
   }
 
@@ -72,7 +71,7 @@ public:
   }
 
   void shutdown() {
-    profiler.start("\nShutting down engine");
+    Profiler::start("\nShutting down engine");
     Logger::Log("\n-- Shutting down engine --\n");
     running = false;
     Logger::Log("\n-- Shutting down modules --\n");
@@ -82,10 +81,10 @@ public:
       Logger::Log("Shutting down module: " + module->id + "\n");
       module->shutdown(this);
 
-      profiler.printAverage(module->id);
+      Profiler::printAverage(module->id);
     }
-    profiler.stop("\nShutting down engine");
-    profiler.printTimes("\nShutting down engine");
+    Profiler::stop("\nShutting down engine");
+    Profiler::printTimes("\nShutting down engine");
   }
 
 private:
@@ -97,9 +96,9 @@ private:
       process(this, deltaTime);
 
       for (std::unique_ptr<Module>& module : modules) {
-        profiler.start(module->id);
+        Profiler::start(module->id);
         module->main(this);
-        profiler.stop(module->id);
+        Profiler::stop(module->id);
       }
 
 

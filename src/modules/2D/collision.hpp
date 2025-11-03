@@ -24,6 +24,7 @@ public:
     return false;
   }
 
+  // TODO: Quadtree
   void main(Engine* engine) override {
     for (auto& obj : engine->scene->objects) {
       if (auto physicsObject = dynamic_cast<PhysicsObject*>(obj.get())) {

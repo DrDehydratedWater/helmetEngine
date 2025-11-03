@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_map>
 
+/// Caches / plays sound effects and music using SDL_mixer
 class AudioModule : public Module {
 public:
   AudioModule() : Module("AudioModule") {}
@@ -42,12 +43,8 @@ public:
     Mix_PlayMusic(music.second, loops);
   }
 
-  void main(Engine* engine) override {
-    
-  }
-
-  void shutdown(Engine* engine) override {
-    
+  void startup(Engine* engine) override {
+    audioInit();
   }
 
   bool isChannelPlaying(int channel) {
