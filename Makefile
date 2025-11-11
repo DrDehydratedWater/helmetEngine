@@ -1,8 +1,8 @@
-Test: src/examples/collisionTest.cpp
+Platformer: src/examples/platformer/platformer.cpp
 	@make --no-print-directory compile
 	mkdir -p build
-	g++ src/examples/collisionTest.cpp -o build/collisionTest -lSDL3 -lSDL3_image -lSDL3_mixer
-	cd build && echo && ./collisionTest
+	g++ src/examples/platformer/platformer.cpp -o build/platformer -lSDL3 -lSDL3_image -lSDL3_mixer
+	cd build && echo && ./platformer
 
 compile:
 	@echo "-- Compiling file --"

@@ -104,7 +104,7 @@ private:
 
       auto stop = std::chrono::high_resolution_clock::now();
 
-      deltaTime = std::chrono::duration<double, std::milli>(stop - start).count();
+      deltaTime = std::chrono::duration<double>(stop - start).count();
     }
   }
 };

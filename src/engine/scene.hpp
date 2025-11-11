@@ -1,6 +1,6 @@
 #pragma once
 
-#include "util/math/Vec2.hpp"
+#include "util/math/vec2.hpp"
 #include "util/logger.hpp"
 #include <memory>
 #include <string>

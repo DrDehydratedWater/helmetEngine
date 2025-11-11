@@ -2,16 +2,15 @@
 
 #include "../../scene.hpp"
 #include "../../engine.hpp"
-#include "node.hpp"
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
 #include <SDL3_image/SDL_image.h>
-#include "../../util/math/Vec2.hpp"
+#include "shapes.hpp"
+#include "../../util/math/vec2.hpp"
 
-class Sprite : public Node {
+class Sprite : public Box {
 public:
   SDL_Texture *texture;
-  Vec2 size;
   bool visible;
 };
 
