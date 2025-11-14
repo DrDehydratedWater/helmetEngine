@@ -4,6 +4,7 @@
 #include <helmetEngine/modules/2D/renderer.hpp>
 #include <helmetEngine/modules/2D/audio.hpp>
 #include <helmetEngine/modules/2D/collision.hpp>
+#include <helmetEngine/modules/2D/shapes.hpp>
 #include <helmetEngine/util/logger.hpp>
 #include <helmetEngine/util/uniqueHelper.hpp>
 
@@ -17,20 +18,20 @@ void process(Engine* engine, double deltaTime) {
   static auto* player = engine->scene->getObject<PhysicsObject>("player");
   static auto* playerSprite = engine->scene->getObject<Sprite>("playerSprite");
   
-  double speed = 150;
+  double speed = 0.1;
   double jumpPower = -0.1;
   bool canJump = true;
 
   double gravity = 100;
   double gravityAccel = 0.01;
 
-  std::cout << "Player velocity: " << player->velocity << "\n" << "Player position: " << player->position << "\n";
+  player->velocity * 0.9;
 
   if (inputModule->isKeyDown(SDLK_D)) {
-    player->velocity.x = speed;
+    player->velocity.x += speed;
   }
   if (inputModule->isKeyDown(SDLK_A)) {
-    player->velocity.x = -speed;
+    player->velocity.x += -speed;
   }
   if (inputModule->isKeyDown(SDLK_SPACE)) {
     player->velocity.y += jumpPower;
@@ -40,11 +41,11 @@ void process(Engine* engine, double deltaTime) {
       audioModule->playSFX(0, "../resources/sample.wav", 1);
     }
     playerSprite->size += {0.005, 0.005};
-    player->box->size += {0.005, 0.005};
+    player->rect->size += {0.005, 0.005};
   }
   if (inputModule->isKeyDown(SDLK_G)) {
     playerSprite->size -= {0.005, 0.005};
-    player->box->size -= {0.005, 0.005};
+    player->rect->size -= {0.005, 0.005};
   }
   if (inputModule->isKeyDown(SDLK_Q)) {
     engine->shutdown();
@@ -58,13 +59,17 @@ void process(Engine* engine, double deltaTime) {
 int main() {
   auto rendererModule = std::make_unique<RendererModule>("Sprite Test", 1000, 1000);
 
+  auto collisionModule = std::make_unique<CollisionModule>();
+  collisionModule->maxDepth = 4;
+  collisionModule->maxObjects = 4;
+
   Scene scene;
 
 
   auto player = std::make_unique<PhysicsObject>();
-  player->box = std::make_unique<Box>();
+  player->rect = std::make_unique<Rect>();
   player->id = "player";
-  player->box->size = {128, 128};
+  player->rect->size = {128, 128};
   player->position = {0, 0};
 
 
@@ -73,24 +78,25 @@ int main() {
   sprite->position = {0, 0};
   sprite->localPosition = {0, 0};
   sprite->size = {128, 128};
-  sprite->texture = IMG_LoadTexture(rendererModule->SDLRenderer, "../resources/icon.png");
+  sprite->texture = "../resources/icon.png";
 
   player->addObject(sprite.get());
 
   
   auto staticObj = std::make_unique<PhysicsObject>();
   staticObj->id = "staticObject";
-  staticObj->box = std::make_unique<Box>();
-  staticObj->box->size = {0, 0};
+  staticObj->rect = std::make_unique<Rect>();
+  staticObj->rect->size = {128, 128};
   staticObj->position = {200, 200};
   staticObj->velocity = {0, 0};
+  staticObj->isStatic = true;
 
 
   auto staticSprite = std::make_unique<Sprite>();
   staticSprite->id = "staticSprite";
   staticSprite->position = staticObj->position;
   staticSprite->size = {128, 128};
-  staticSprite->texture = IMG_LoadTexture(rendererModule->SDLRenderer, "../resources/icon.png");
+  staticSprite->texture = "../resources/icon.png";
 
   staticObj->addObject(staticSprite.get());
 
@@ -106,7 +112,7 @@ int main() {
     std::move(rendererModule),
     std::make_unique<AudioModule>(),
     std::make_unique<InputModule>(),
-    std::make_unique<CollisionModule>()
+    std::move(collisionModule)
     )
   );
 

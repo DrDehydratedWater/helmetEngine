@@ -8,9 +8,9 @@
 #include "shapes.hpp"
 #include "../../util/math/vec2.hpp"
 
-class Sprite : public Box {
+class Sprite : public Rect {
 public:
-  SDL_Texture *texture;
+  std::string texture;
   bool visible;
 };
 
@@ -24,6 +24,8 @@ public:
   SDL_Renderer *SDLRenderer = NULL;
   SDL_Window *SDLWindow = NULL;
 
+  using TexturePtr = std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)>;
+  std::vector<std::pair<std::string, TexturePtr>> loadedTextures;
   
   bool rendererInit(const char *title, int width, int height) {
     SDLWindow = SDL_CreateWindow(title, width, height, 0);
@@ -36,8 +38,16 @@ public:
   }
 
   void drawSprite(const Sprite &sprite) {
-    if (!SDLRenderer || !sprite.texture)
-      return;
+    auto it = std::find_if(loadedTextures.begin(), loadedTextures.end(),
+      [&](const auto &p){ return p.first == sprite.texture; });
+
+    if (it == loadedTextures.end()) {
+      SDL_Texture* rawTexture = IMG_LoadTexture(SDLRenderer, sprite.texture.c_str());
+      loadedTextures.emplace_back(sprite.texture, TexturePtr(rawTexture, SDL_DestroyTexture));
+      it = std::prev(loadedTextures.end());
+    }
+
+    SDL_Texture* texture = it->second.get();
 
     SDL_FRect dst;
     dst.x = sprite.position.x;
@@ -45,10 +55,11 @@ public:
     dst.w = sprite.size.x;
     dst.h = sprite.size.y;
 
-    SDL_RenderTexture(SDLRenderer, sprite.texture, nullptr, &dst);
+    SDL_RenderTexture(SDLRenderer, texture, nullptr, &dst);
   }
 
   void shutdownRenderer() {
+    loadedTextures.clear();
     SDL_Quit();
   }
 
