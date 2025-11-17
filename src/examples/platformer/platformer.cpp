@@ -41,11 +41,11 @@ void process(Engine* engine, double deltaTime) {
       audioModule->playSFX(0, "../resources/sample.wav", 1);
     }
     playerSprite->size += {0.005, 0.005};
-    player->rect->size += {0.005, 0.005};
+    player->size += {0.005, 0.005};
   }
   if (inputModule->isKeyDown(SDLK_G)) {
     playerSprite->size -= {0.005, 0.005};
-    player->rect->size -= {0.005, 0.005};
+    player->size -= {0.005, 0.005};
   }
   if (inputModule->isKeyDown(SDLK_Q)) {
     engine->shutdown();
@@ -57,8 +57,6 @@ void process(Engine* engine, double deltaTime) {
 }
 
 int main() {
-  auto rendererModule = std::make_unique<RendererModule>("Sprite Test", 1000, 1000);
-
   auto collisionModule = std::make_unique<CollisionModule>();
   collisionModule->maxDepth = 4;
   collisionModule->maxObjects = 4;
@@ -67,9 +65,8 @@ int main() {
 
 
   auto player = std::make_unique<PhysicsObject>();
-  player->rect = std::make_unique<Rect>();
   player->id = "player";
-  player->rect->size = {128, 128};
+  player->size = {128, 128};
   player->position = {0, 0};
 
 
@@ -82,12 +79,20 @@ int main() {
 
   player->addObject(sprite.get());
 
+
+  auto playerCamera = std::make_unique<Camera>();
+  playerCamera->id = "playerCamera";
+  playerCamera->position = {0, 0};
+  playerCamera->localPosition = {0, 0};
+  playerCamera->size = {128, 128};
+
+  player->addObject(playerCamera.get());
+
   
   auto staticObj = std::make_unique<PhysicsObject>();
   staticObj->id = "staticObject";
-  staticObj->rect = std::make_unique<Rect>();
-  staticObj->rect->size = {128, 128};
-  staticObj->position = {200, 200};
+  staticObj->size = {1000, 128};
+  staticObj->position = {200, 500};
   staticObj->velocity = {0, 0};
   staticObj->isStatic = true;
 
@@ -95,7 +100,7 @@ int main() {
   auto staticSprite = std::make_unique<Sprite>();
   staticSprite->id = "staticSprite";
   staticSprite->position = staticObj->position;
-  staticSprite->size = {128, 128};
+  staticSprite->size = {1000, 500};
   staticSprite->texture = "../resources/icon.png";
 
   staticObj->addObject(staticSprite.get());
@@ -106,6 +111,10 @@ int main() {
   scene.addObject(std::move(staticObj));
 
   Engine engine;
+
+  auto rendererModule = std::make_unique<RendererModule>("Sprite Test", 1000, 1000);
+
+  rendererModule->camera = playerCamera.get();
 
   engine.engineInit(process, &scene,
   make_unique_vector<Module>(

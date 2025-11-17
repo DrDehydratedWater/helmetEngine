@@ -14,12 +14,17 @@ public:
   bool visible;
 };
 
+class Camera : public Rect {
+};
+
 class RendererModule : public Module {
 public:
   RendererModule(const char* title, int width, int height) 
       : Module("RendererModule") {
     rendererInit(title, width, height);
   }
+
+  const Camera* camera;
 
   SDL_Renderer *SDLRenderer = NULL;
   SDL_Window *SDLWindow = NULL;
@@ -49,13 +54,13 @@ public:
 
     SDL_Texture* texture = it->second.get();
 
-    SDL_FRect dst;
-    dst.x = sprite.position.x;
-    dst.y = sprite.position.y;
-    dst.w = sprite.size.x;
-    dst.h = sprite.size.y;
+    SDL_FRect rect;
+    rect.x = sprite.position.x - camera->position.x;
+    rect.y = sprite.position.y - camera->position.y;
+    rect.w = sprite.size.x;
+    rect.h = sprite.size.y;
 
-    SDL_RenderTexture(SDLRenderer, texture, nullptr, &dst);
+    SDL_RenderTexture(SDLRenderer, texture, nullptr, &rect);
   }
 
   void shutdownRenderer() {

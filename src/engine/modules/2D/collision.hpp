@@ -8,9 +8,8 @@
 #include <iostream>
 
 
-class PhysicsObject : public Node {
+class PhysicsObject : public Rect {
 public:
-  std::unique_ptr<Rect> rect;
   Vec2 velocity = {0, 0};
   bool enabled;
   bool isStatic = false; // if true, this object should not be moved by physics/collision resolution
@@ -49,9 +48,9 @@ public:
           physicsObject->move(physicsObject->position + physicsObject->velocity * engine->deltaTime);
         } else {
           // ensure rect still matches object's fixed position
-          if (physicsObject->rect) physicsObject->rect->position = physicsObject->position;
+          physicsObject->position = physicsObject->position;
         }
-        if (physicsObject->rect) physicsObject->rect->position = physicsObject->position;
+        physicsObject->position = physicsObject->position;
         allPhysicsObjects.push_back(physicsObject);
       }
     }
@@ -77,9 +76,8 @@ private:
   }
 
   void resolveOverlap(PhysicsObject* pa, PhysicsObject* pb) {
-    if (!pa || !pb || !pa->rect || !pb->rect) return;
-    Rect &a = *pa->rect;
-    Rect &b = *pb->rect;
+    Rect &a = *pa;
+    Rect &b = *pb;
 
     // compute penetration on each side
     double overlapXL = (a.position.x + a.size.x) - b.position.x;
@@ -152,8 +150,8 @@ private:
     }
 
     // keep rect positions in sync with their owners
-    pa->rect->position = pa->position;
-    pb->rect->position = pb->position;
+    pa->position = pa->position;
+    pb->position = pb->position;
   }
 
 
@@ -179,8 +177,7 @@ private:
       quadRect->size = cellHalfSize;
 
       for (auto obj : cell.objects) {
-        if (!obj->rect) continue;
-        if (isColliding(*quadRect, *obj->rect)) {
+        if (isColliding(*quadRect, *obj)) {
           quadObjects.push_back(obj);
         }
       }
@@ -195,8 +192,8 @@ private:
       for (int j = i + 1; j < cell.objects.size(); j++) {
         PhysicsObject* pa = cell.objects[i];
         PhysicsObject* pb = cell.objects[j];
-        if (!pa || !pb || !pa->rect || !pb->rect) continue;
-        if (isColliding(*pa->rect, *pb->rect)) {
+        if (!pa || !pb || !pa || !pb) continue;
+        if (isColliding(*pa, *pb)) {
           resolveOverlap(pa, pb);
         }
       }
