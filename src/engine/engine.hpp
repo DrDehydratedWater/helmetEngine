@@ -16,8 +16,8 @@ public:
   Module(const std::string& moduleId) : id(moduleId) {}
 
   virtual void startup(Engine*) {};
-  virtual void main(Engine*) {};
-  virtual void shutdown(Engine*) {};
+  virtual void main() {};
+  virtual void shutdown() {};
 
   virtual ~Module() = default;
 };
@@ -64,9 +64,7 @@ public:
   template<typename T>
   auto getModule(std::string id) {
     Logger::Log("Getting module" + id + "\n");
-    auto it = std::find_if(
-        modules.begin(), modules.end(),
-        [&](const std::unique_ptr<Module> &module) { return module->id == id; });
+    auto it = findModule(id);
     return (it != modules.end()) ? dynamic_cast<T*>(it->get()) : nullptr;
   }
 
@@ -79,7 +77,7 @@ public:
       std::unique_ptr<Module>& module = (*it);
 
       Logger::Log("Shutting down module: " + module->id + "\n");
-      module->shutdown(this);
+      module->shutdown();
 
       Profiler::printAverage(module->id);
     }
@@ -93,13 +91,13 @@ private:
       auto start = std::chrono::high_resolution_clock::now();
 
 
-      process(this, deltaTime);
-
       for (std::unique_ptr<Module>& module : modules) {
         Profiler::start(module->id);
-        module->main(this);
+        module->main();
         Profiler::stop(module->id);
       }
+
+      process(this, deltaTime);
 
 
       auto stop = std::chrono::high_resolution_clock::now();

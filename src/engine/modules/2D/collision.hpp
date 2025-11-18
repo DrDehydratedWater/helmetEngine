@@ -6,19 +6,24 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <utility>
 
 
 class PhysicsObject : public Rect {
 public:
   Vec2 velocity = {0, 0};
   bool enabled;
-  bool isStatic = false; // if true, this object should not be moved by physics/collision resolution
+  bool isStatic = false;
 };
 
 class CollisionModule : public Module {
 public:
   int maxDepth;
   int maxObjects;
+
+  std::vector<std::pair<std::string, std::string>> collisions;
+
+  Engine* engine;
 
   struct Cell {
     std::vector<Cell> cells;
@@ -39,8 +44,17 @@ public:
 
   CollisionModule() : Module("CollisionModule") {}
 
-  void main(Engine* engine) override {
-    std::vector<PhysicsObject*> allPhysicsObjects;
+
+  void startup(Engine* temp) override {
+    engine = temp;
+  }
+
+  void main() override {
+    collisions.clear();
+    for (auto c : collisions) {
+      std::cout << c.first << " " << c.second;
+    }
+    std::vector<PhysicsObject*> physicsObjects;
     for (auto& obj : engine->scene->objects) {
       if (auto physicsObject = dynamic_cast<PhysicsObject*>(obj.get())) {
         // Only update position from velocity for non-static objects
@@ -51,7 +65,7 @@ public:
           physicsObject->position = physicsObject->position;
         }
         physicsObject->position = physicsObject->position;
-        allPhysicsObjects.push_back(physicsObject);
+        physicsObjects.push_back(physicsObject);
       }
     }
 
@@ -59,15 +73,26 @@ public:
     root.rect = std::make_unique<Rect>();
     root.rect->position = {0, 0};
     root.rect->size = {1920, 1080};
-    root.objects = allPhysicsObjects;
+    root.objects = physicsObjects;
 
     subdivideCell(root, 0, engine);
 
     checkCollisionsInCell(root, engine);
   }
 
+  /// Tries to get the id of the last object object a collided with
+  std::string whatsCollidingWith(std::string a) {
+    auto it = std::find_if(
+        collisions.begin(), collisions.end(),
+        [&](const std::pair<std::string, std::string> &collision) { return collision.first == a; });
+    
+    if (it == collisions.end()) {return "";}
+
+    return it->second;
+  }
+
 private:
-  static bool isColliding(const Rect& a, const Rect& b) {
+  static bool checkOverlap(const Rect& a, const Rect& b) {
     if (a.position.x + a.size.x >= b.position.x &&
         a.position.x <= b.position.x + b.size.x &&
         a.position.y + a.size.y >= b.position.y &&
@@ -177,7 +202,7 @@ private:
       quadRect->size = cellHalfSize;
 
       for (auto obj : cell.objects) {
-        if (isColliding(*quadRect, *obj)) {
+        if (checkOverlap(*quadRect, *obj)) {
           quadObjects.push_back(obj);
         }
       }
@@ -193,7 +218,8 @@ private:
         PhysicsObject* pa = cell.objects[i];
         PhysicsObject* pb = cell.objects[j];
         if (!pa || !pb || !pa || !pb) continue;
-        if (isColliding(*pa, *pb)) {
+        if (checkOverlap(*pa, *pb)) {
+          collisions.push_back({pa->id, pb->id});
           resolveOverlap(pa, pb);
         }
       }

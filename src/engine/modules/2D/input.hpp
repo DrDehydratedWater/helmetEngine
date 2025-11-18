@@ -3,6 +3,8 @@
 
 class InputModule : public Module {
 public:
+  Engine* engine;
+
   InputModule() : Module("InputModule") {}
 
 
@@ -13,8 +15,12 @@ public:
     return keyStates.find(key) != keyStates.end() ? keyStates[key] : false;
   }
 
+  void startup(Engine* temp) {
+    engine = temp;
+  }
 
-  void main(Engine* engine) override {
+
+  void main() override {
     while (SDL_PollEvent(&engine->event)) {
       if (engine->event.type == SDL_EVENT_QUIT) {
         engine->shutdown();

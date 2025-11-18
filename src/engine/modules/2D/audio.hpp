@@ -43,7 +43,7 @@ public:
     Mix_PlayMusic(music.second, loops);
   }
 
-  void startup(Engine* engine) override {
+  void startup(Engine* s) override {
     audioInit();
   }
 

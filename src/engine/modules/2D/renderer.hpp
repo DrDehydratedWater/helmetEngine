@@ -15,10 +15,16 @@ public:
 };
 
 class Camera : public Rect {
+public:
+  Vec2 offset;
+  Vec2 zoom;
 };
 
 class RendererModule : public Module {
 public:
+  Engine* engine;
+
+  
   RendererModule(const char* title, int width, int height) 
       : Module("RendererModule") {
     rendererInit(title, width, height);
@@ -55,8 +61,8 @@ public:
     SDL_Texture* texture = it->second.get();
 
     SDL_FRect rect;
-    rect.x = sprite.position.x - camera->position.x;
-    rect.y = sprite.position.y - camera->position.y;
+    rect.x = sprite.position.x - camera->position.x + camera->offset.x;
+    rect.y = sprite.position.y - camera->position.y + camera->offset.y;
     rect.w = sprite.size.x;
     rect.h = sprite.size.y;
 
@@ -68,8 +74,11 @@ public:
     SDL_Quit();
   }
 
+  void startup(Engine* temp) override {
+    engine = temp;
+  }
 
-  void main(Engine* engine) override {
+  void main() override {
     SDL_SetRenderDrawColor(SDLRenderer, 0, 0, 0, 255);
     SDL_RenderClear(SDLRenderer);
 
@@ -82,7 +91,7 @@ public:
     SDL_RenderPresent(SDLRenderer);
   }
 
-  void shutdown(Engine* engine) override {
+  void shutdown() override {
     shutdownRenderer();
   }
 };

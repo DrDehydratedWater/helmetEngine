@@ -14,18 +14,19 @@ bool Profiler::enabled = true;
 void process(Engine* engine, double deltaTime) {
   static auto* inputModule = engine->getModule<InputModule>("InputModule");
   static auto* audioModule = engine->getModule<AudioModule>("AudioModule");
+  static auto* collisionModule = engine->getModule<CollisionModule>("CollisionModule");
 
   static auto* player = engine->scene->getObject<PhysicsObject>("player");
   static auto* playerSprite = engine->scene->getObject<Sprite>("playerSprite");
   
   double speed = 0.1;
-  double jumpPower = -0.1;
+  double jumpPower = -100;
   bool canJump = true;
 
   double gravity = 100;
   double gravityAccel = 0.01;
 
-  player->velocity * 0.9;
+  player->velocity.x * 0.1;
 
   if (inputModule->isKeyDown(SDLK_D)) {
     player->velocity.x += speed;
@@ -34,7 +35,10 @@ void process(Engine* engine, double deltaTime) {
     player->velocity.x += -speed;
   }
   if (inputModule->isKeyDown(SDLK_SPACE)) {
-    player->velocity.y += jumpPower;
+    if (collisionModule->whatsCollidingWith("player") == "staticObject") {
+      player->velocity.y += jumpPower;
+      std::cout << "Player can jump";
+    }
   }
   if (inputModule->isKeyDown(SDLK_F)) {
     if (!audioModule->isChannelPlaying(0)) {
@@ -57,10 +61,6 @@ void process(Engine* engine, double deltaTime) {
 }
 
 int main() {
-  auto collisionModule = std::make_unique<CollisionModule>();
-  collisionModule->maxDepth = 4;
-  collisionModule->maxObjects = 4;
-
   Scene scene;
 
 
@@ -70,28 +70,28 @@ int main() {
   player->position = {0, 0};
 
 
-  auto sprite = std::make_unique<Sprite>();
-  sprite->id = "playerSprite";
-  sprite->position = {0, 0};
-  sprite->localPosition = {0, 0};
-  sprite->size = {128, 128};
-  sprite->texture = "../resources/icon.png";
+  auto playerSprite = std::make_unique<Sprite>();
+  playerSprite->id = "playerSprite";
+  playerSprite->position = {0, 0};
+  playerSprite->localPosition = {0, 0};
+  playerSprite->size = {128, 128};
+  playerSprite->texture = "../resources/icon.png";
 
-  player->addObject(sprite.get());
+  player->addObject(playerSprite.get());
 
 
   auto playerCamera = std::make_unique<Camera>();
   playerCamera->id = "playerCamera";
   playerCamera->position = {0, 0};
   playerCamera->localPosition = {0, 0};
-  playerCamera->size = {128, 128};
+  playerCamera->offset = {500 - (playerSprite->size.x / 2), 500 - (playerSprite->size.x / 2)};
 
   player->addObject(playerCamera.get());
 
   
   auto staticObj = std::make_unique<PhysicsObject>();
   staticObj->id = "staticObject";
-  staticObj->size = {1000, 128};
+  staticObj->size = {1000, 500};
   staticObj->position = {200, 500};
   staticObj->velocity = {0, 0};
   staticObj->isStatic = true;
@@ -105,7 +105,7 @@ int main() {
 
   staticObj->addObject(staticSprite.get());
 
-  scene.addObject(std::move(sprite));
+  scene.addObject(std::move(playerSprite));
   scene.addObject(std::move(player));
   scene.addObject(std::move(staticSprite));
   scene.addObject(std::move(staticObj));
@@ -115,6 +115,10 @@ int main() {
   auto rendererModule = std::make_unique<RendererModule>("Sprite Test", 1000, 1000);
 
   rendererModule->camera = playerCamera.get();
+
+  auto collisionModule = std::make_unique<CollisionModule>();
+  collisionModule->maxDepth = 4;
+  collisionModule->maxObjects = 4;
 
   engine.engineInit(process, &scene,
   make_unique_vector<Module>(
