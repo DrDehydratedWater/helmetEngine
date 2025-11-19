@@ -2,6 +2,7 @@
 #include "../../util/math/vec2.hpp"
 #include "../../scene.hpp"
 
+/// @brief A 2D point with position
 class Node : public GameObject {
 public:
   Vec2 localPosition = {0, 0};
@@ -12,6 +13,8 @@ public:
   Node(const Vec2& position_)
     : localPosition(0, 0), position(position_) {}
 
+  /// @brief Moves a Node and all of it's children
+  /// @param p A Vector2 of the position where the object should be moved
   void move(Vec2 p) {
     position = p + localPosition;
     for (auto child : children) {
@@ -22,6 +25,7 @@ public:
   }
 };
 
+/// @brief A rectangle with height and width
 class Rect : public Node {
 public:
   Vec2 size;

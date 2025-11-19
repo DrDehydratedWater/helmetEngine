@@ -5,15 +5,14 @@
 #include "util/profiler.hpp"
 #include <functional>
 #include <chrono>
-#include <SDL3/SDL_events.h>
 #include <iostream>
 
 class Engine;
 
 class Module {
 public:
-  const std::string id;
-  Module(const std::string& moduleId) : id(moduleId) {}
+  const std::string label;
+  Module(const std::string& moduleLabel) : label(moduleLabel) {}
 
   virtual void startup(Engine*) {};
   virtual void main() {};
@@ -27,7 +26,6 @@ public:
   std::vector<std::unique_ptr<Module>> modules;
   std::function<void(Engine*, double)> process;
   Scene *scene;
-  SDL_Event event;
 
   double deltaTime;
 
@@ -54,17 +52,17 @@ public:
     engineProcess();
   }
 
-  auto findModule(std::string id) {
-    Logger::Log("Finding module: " + id + "\n");
+  auto findModule(std::string label) {
+    Logger::Log("Finding module: " + label + "\n");
     return std::find_if(
         modules.begin(), modules.end(),
-        [&](const std::unique_ptr<Module> &module) { return module->id == id; });
+        [&](const std::unique_ptr<Module> &module) { return module->label == label; });
   }
 
   template<typename T>
-  auto getModule(std::string id) {
-    Logger::Log("Getting module" + id + "\n");
-    auto it = findModule(id);
+  auto getModule(std::string label) {
+    Logger::Log("Getting module" + label + "\n");
+    auto it = findModule(label);
     return (it != modules.end()) ? dynamic_cast<T*>(it->get()) : nullptr;
   }
 
@@ -76,10 +74,10 @@ public:
     for (auto it = modules.rbegin(); it != modules.rend(); ++it) {
       std::unique_ptr<Module>& module = (*it);
 
-      Logger::Log("Shutting down module: " + module->id + "\n");
+      Logger::Log("Shutting down module: " + module->label + "\n");
       module->shutdown();
 
-      Profiler::printAverage(module->id);
+      Profiler::printAverage(module->label);
     }
     Profiler::stop("\nShutting down engine");
     Profiler::printTimes("\nShutting down engine");
@@ -92,9 +90,9 @@ private:
 
 
       for (std::unique_ptr<Module>& module : modules) {
-        Profiler::start(module->id);
+        Profiler::start(module->label);
         module->main();
-        Profiler::stop(module->id);
+        Profiler::stop(module->label);
       }
 
       process(this, deltaTime);

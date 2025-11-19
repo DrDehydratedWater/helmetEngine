@@ -8,29 +8,23 @@
 #include "shapes.hpp"
 #include "../../util/math/vec2.hpp"
 
+/// @brief Sprite that stores the texture path as a string
 class Sprite : public Rect {
 public:
   std::string texture;
   bool visible;
 };
 
+/// @brief Camera, each sprite is placed on the window from the relative position of the sprite from the camera
 class Camera : public Rect {
 public:
   Vec2 offset;
-  Vec2 zoom;
 };
 
+/// @brief Renders sprites
 class RendererModule : public Module {
-public:
+private:
   Engine* engine;
-
-  
-  RendererModule(const char* title, int width, int height) 
-      : Module("RendererModule") {
-    rendererInit(title, width, height);
-  }
-
-  const Camera* camera;
 
   SDL_Renderer *SDLRenderer = NULL;
   SDL_Window *SDLWindow = NULL;
@@ -38,12 +32,11 @@ public:
   using TexturePtr = std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)>;
   std::vector<std::pair<std::string, TexturePtr>> loadedTextures;
   
-  bool rendererInit(const char *title, int width, int height) {
+  bool rendererInit(const char *title, int width, int height, Camera *camera_) {
     SDLWindow = SDL_CreateWindow(title, width, height, 0);
-
     SDLRenderer = SDL_CreateRenderer(SDLWindow, 0);
 
-    SDL_SetWindowIcon(SDLWindow, IMG_Load("../resources/icon.png"));
+    camera = camera_;
 
     return true;
   }
@@ -93,5 +86,13 @@ public:
 
   void shutdown() override {
     shutdownRenderer();
+  }
+
+public:
+  const Camera* camera;
+
+  RendererModule(const char* title, int width, int height, Camera* camera) 
+      : Module("RendererModule") {
+    rendererInit(title, width, height, camera);
   }
 };

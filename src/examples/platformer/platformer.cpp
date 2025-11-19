@@ -19,14 +19,14 @@ void process(Engine* engine, double deltaTime) {
   static auto* player = engine->scene->getObject<PhysicsObject>("player");
   static auto* playerSprite = engine->scene->getObject<Sprite>("playerSprite");
   
-  double speed = 0.1;
-  double jumpPower = -100;
+  double speed = 50;
+  double jumpPower = -500;
   bool canJump = true;
 
-  double gravity = 100;
-  double gravityAccel = 0.01;
+  double gravity = 500;
+  double gravityAccel = 0.1;
 
-  player->velocity.x * 0.1;
+  player->velocity.x *= 0.9;
 
   if (inputModule->isKeyDown(SDLK_D)) {
     player->velocity.x += speed;
@@ -36,13 +36,12 @@ void process(Engine* engine, double deltaTime) {
   }
   if (inputModule->isKeyDown(SDLK_SPACE)) {
     if (collisionModule->whatsCollidingWith("player") == "staticObject") {
-      player->velocity.y += jumpPower;
-      std::cout << "Player can jump";
+      player->velocity.y = jumpPower;
     }
   }
   if (inputModule->isKeyDown(SDLK_F)) {
     if (!audioModule->isChannelPlaying(0)) {
-      audioModule->playSFX(0, "../resources/sample.wav", 1);
+      audioModule->playSFX(0, "../resources/sample.wav", 0);
     }
     playerSprite->size += {0.005, 0.005};
     player->size += {0.005, 0.005};
@@ -55,7 +54,7 @@ void process(Engine* engine, double deltaTime) {
     engine->shutdown();
   }
 
-  if (player->velocity.y < gravity){
+  if (player->velocity.y < gravity && !(collisionModule->whatsCollidingWith("player") == "staticObject")){
     player->velocity.y += gravityAccel;
   }
 }
@@ -65,13 +64,13 @@ int main() {
 
 
   auto player = std::make_unique<PhysicsObject>();
-  player->id = "player";
+  player->label = "player";
   player->size = {128, 128};
   player->position = {0, 0};
 
 
   auto playerSprite = std::make_unique<Sprite>();
-  playerSprite->id = "playerSprite";
+  playerSprite->label = "playerSprite";
   playerSprite->position = {0, 0};
   playerSprite->localPosition = {0, 0};
   playerSprite->size = {128, 128};
@@ -81,7 +80,7 @@ int main() {
 
 
   auto playerCamera = std::make_unique<Camera>();
-  playerCamera->id = "playerCamera";
+  playerCamera->label = "playerCamera";
   playerCamera->position = {0, 0};
   playerCamera->localPosition = {0, 0};
   playerCamera->offset = {500 - (playerSprite->size.x / 2), 500 - (playerSprite->size.x / 2)};
@@ -90,7 +89,7 @@ int main() {
 
   
   auto staticObj = std::make_unique<PhysicsObject>();
-  staticObj->id = "staticObject";
+  staticObj->label = "staticObject";
   staticObj->size = {1000, 500};
   staticObj->position = {200, 500};
   staticObj->velocity = {0, 0};
@@ -98,7 +97,7 @@ int main() {
 
 
   auto staticSprite = std::make_unique<Sprite>();
-  staticSprite->id = "staticSprite";
+  staticSprite->label = "staticSprite";
   staticSprite->position = staticObj->position;
   staticSprite->size = {1000, 500};
   staticSprite->texture = "../resources/icon.png";
@@ -112,20 +111,13 @@ int main() {
 
   Engine engine;
 
-  auto rendererModule = std::make_unique<RendererModule>("Sprite Test", 1000, 1000);
-
-  rendererModule->camera = playerCamera.get();
-
-  auto collisionModule = std::make_unique<CollisionModule>();
-  collisionModule->maxDepth = 4;
-  collisionModule->maxObjects = 4;
 
   engine.engineInit(process, &scene,
   make_unique_vector<Module>(
-    std::move(rendererModule),
+    std::make_unique<RendererModule>("Sprite Test", 1000, 1000, playerCamera.get()),
     std::make_unique<AudioModule>(),
     std::make_unique<InputModule>(),
-    std::move(collisionModule)
+    std::make_unique<CollisionModule>(4, 4)
     )
   );
 

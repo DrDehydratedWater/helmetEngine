@@ -8,7 +8,7 @@
 #include <iostream>
 #include <utility>
 
-
+/// @brief Static or non static rectangle that has velocity
 class PhysicsObject : public Rect {
 public:
   Vec2 velocity = {0, 0};
@@ -16,11 +16,9 @@ public:
   bool isStatic = false;
 };
 
+/// @brief Uses Quadtree collision detection and applies velocity to PhysicsObjects. Also keeps track of collisions that happen each frame
 class CollisionModule : public Module {
-public:
-  int maxDepth;
-  int maxObjects;
-
+private:
   std::vector<std::pair<std::string, std::string>> collisions;
 
   Engine* engine;
@@ -40,9 +38,6 @@ public:
       cells.push_back(std::move(cell));
     }
   };
-
-
-  CollisionModule() : Module("CollisionModule") {}
 
 
   void startup(Engine* temp) override {
@@ -80,18 +75,6 @@ public:
     checkCollisionsInCell(root, engine);
   }
 
-  /// Tries to get the id of the last object object a collided with
-  std::string whatsCollidingWith(std::string a) {
-    auto it = std::find_if(
-        collisions.begin(), collisions.end(),
-        [&](const std::pair<std::string, std::string> &collision) { return collision.first == a; });
-    
-    if (it == collisions.end()) {return "";}
-
-    return it->second;
-  }
-
-private:
   static bool checkOverlap(const Rect& a, const Rect& b) {
     if (a.position.x + a.size.x >= b.position.x &&
         a.position.x <= b.position.x + b.size.x &&
@@ -119,7 +102,7 @@ private:
     double resolveXAmount = std::min(overlapXL, overlapXR);
     double resolveYAmount = std::min(overlapYT, overlapYB);
 
-    // move the PhysicsObject positions (so changes persist across frames)
+    // move the PhysicsObject positions
     bool aStatic = pa->isStatic;
     bool bStatic = pb->isStatic;
     if (aStatic && bStatic) {
@@ -173,12 +156,7 @@ private:
         }
       }
     }
-
-    // keep rect positions in sync with their owners
-    pa->position = pa->position;
-    pb->position = pb->position;
   }
-
 
   void subdivideCell(Cell& cell, int depth, Engine* engine) {
     if (depth >= maxDepth || cell.objects.size() <= maxObjects) {
@@ -217,9 +195,9 @@ private:
       for (int j = i + 1; j < cell.objects.size(); j++) {
         PhysicsObject* pa = cell.objects[i];
         PhysicsObject* pb = cell.objects[j];
-        if (!pa || !pb || !pa || !pb) continue;
+        if (!pa || !pb || !pa || !pb || !pa->enabled || !pb->enabled) continue;
         if (checkOverlap(*pa, *pb)) {
-          collisions.push_back({pa->id, pb->id});
+          collisions.push_back({pa->label, pb->label});
           resolveOverlap(pa, pb);
         }
       }
@@ -228,5 +206,28 @@ private:
     for (const auto& subcell : cell.cells) {
       checkCollisionsInCell(subcell, engine);
     }
+  }
+
+public:
+  CollisionModule(int maxDepth_, int maxObjects_) 
+      : Module("CollisionModule") {
+    maxDepth = maxDepth_;
+    maxObjects = maxObjects_;
+  }
+  
+  int maxDepth;
+  int maxObjects;
+
+  /// @brief Tries to get the label of the last object a collided with
+  /// @param a The label of a PhysicsObject
+  /// @return Returns the label of the other object or "" if not found
+  std::string whatsCollidingWith(std::string a) {
+    auto it = std::find_if(
+        collisions.begin(), collisions.end(),
+        [&](const std::pair<std::string, std::string> &collision) { return collision.first == a; });
+    
+    if (it == collisions.end()) {return "";}
+
+    return it->second;
   }
 };
