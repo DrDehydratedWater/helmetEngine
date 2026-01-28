@@ -1,8 +1,8 @@
 #include <helmetEngine/engine.hpp>
 #include <helmetEngine/scene.hpp>
-#include <helmetEngine/modules/2D/input.hpp>
+#include <helmetEngine/modules/input.hpp>
+#include <helmetEngine/modules/audio.hpp>
 #include <helmetEngine/modules/2D/renderer.hpp>
-#include <helmetEngine/modules/2D/audio.hpp>
 #include <helmetEngine/modules/2D/collision.hpp>
 #include <helmetEngine/modules/2D/shapes.hpp>
 #include <helmetEngine/util/logger.hpp>
@@ -17,7 +17,7 @@ void process(Engine* engine, double deltaTime) {
   static auto* collisionModule = engine->getModule<CollisionModule>("CollisionModule");
 
   static auto* player = engine->scene->getObject<PhysicsObject>("player");
-  static auto* playerSprite = engine->scene->getObject<Sprite>("playerSprite");
+  static auto* playerSprite = engine->scene->getObject<AnimatedSprite>("playerSprite");
   
   double speed = 50;
   double jumpPower = -500;
@@ -30,9 +30,13 @@ void process(Engine* engine, double deltaTime) {
 
   if (inputModule->isKeyDown(SDLK_D)) {
     player->velocity.x += speed;
+    playerSprite->size.x = std::abs(playerSprite->size.x);
+    playerSprite->localPosition.x = 0;
   }
   if (inputModule->isKeyDown(SDLK_A)) {
     player->velocity.x += -speed;
+    playerSprite->size.x = -std::abs(playerSprite->size.x);
+    playerSprite->localPosition.x = -playerSprite->size.x / 2;
   }
   if (inputModule->isKeyDown(SDLK_SPACE)) {
     if (collisionModule->whatsCollidingWith("player") == "staticObject") {
@@ -67,14 +71,15 @@ int main() {
   player->label = "player";
   player->size = {128, 128};
   player->position = {0, 0};
+  player->enabled = true;
 
 
-  auto playerSprite = std::make_unique<Sprite>();
+  auto playerSprite = std::make_unique<AnimatedSprite>();
   playerSprite->label = "playerSprite";
   playerSprite->position = {0, 0};
   playerSprite->localPosition = {0, 0};
   playerSprite->size = {128, 128};
-  playerSprite->texture = "../resources/icon.png";
+  playerSprite->setSprite("../src/examples/platformer/animationSample");
 
   player->addObject(playerSprite.get());
 
@@ -94,6 +99,7 @@ int main() {
   staticObj->position = {200, 500};
   staticObj->velocity = {0, 0};
   staticObj->isStatic = true;
+  staticObj->enabled = true;
 
 
   auto staticSprite = std::make_unique<Sprite>();

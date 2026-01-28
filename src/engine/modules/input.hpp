@@ -1,5 +1,5 @@
 #pragma once
-#include "../../engine.hpp"
+#include "../engine.hpp"
 #include <SDL3/SDL_events.h>
 
 /// @brief Captures input and saves the state of each key 

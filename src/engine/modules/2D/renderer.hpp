@@ -5,6 +5,7 @@
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
 #include <SDL3_image/SDL_image.h>
+#include <filesystem>
 #include "shapes.hpp"
 #include "../../util/math/vec2.hpp"
 
@@ -12,7 +13,42 @@
 class Sprite : public Rect {
 public:
   std::string texture;
-  bool visible;
+  bool visible = true;
+};
+
+class AnimatedSprite : public Rect {
+public:
+  bool visible = true;
+  std::vector<std::unique_ptr<Sprite>> frames;
+  int frame = 0;
+  double speed = 0.1;
+  double timePassed = 0;
+
+  void setSprite(const std::string& path) {
+    std::vector<std::filesystem::path> files;
+
+    for (const auto& entry : std::filesystem::directory_iterator(path)) {
+      if (entry.is_regular_file()) {
+        files.push_back(entry.path());
+      }
+    }
+
+    std::sort(files.begin(), files.end(),
+      [](const std::filesystem::path& a, const std::filesystem::path& b) {
+          return std::stoi(a.stem().string()) < std::stoi(b.stem().string());
+      }
+    );
+    
+    for (const auto& file : files) {
+      auto sprite = std::make_unique<Sprite>();
+      sprite->texture = file.string();
+      sprite->position = position;
+      sprite->localPosition = localPosition;
+      sprite->size = size;
+      sprite->visible = visible;
+      frames.push_back(std::move(sprite));
+    }
+  }
 };
 
 /// @brief Camera, each sprite is placed on the window from the relative position of the sprite from the camera
@@ -41,6 +77,7 @@ private:
     return true;
   }
 
+  // Texture management is already covered here thus it works with animated sprites too
   void drawSprite(const Sprite &sprite) {
     auto it = std::find_if(loadedTextures.begin(), loadedTextures.end(),
       [&](const auto &p){ return p.first == sprite.texture; });
@@ -79,8 +116,25 @@ private:
       if (auto sprite = dynamic_cast<Sprite*>(obj.get())) {
         drawSprite(*sprite);
       }
-    }
 
+      if (auto animatedSprite = dynamic_cast<AnimatedSprite*>(obj.get())) {
+        animatedSprite->timePassed += engine->deltaTime;
+
+        if (animatedSprite->timePassed >= animatedSprite->speed) {
+          animatedSprite->frame++;
+          if (animatedSprite->frame >= animatedSprite->frames.size()) {
+            animatedSprite->frame = 0;
+          }
+          animatedSprite->timePassed = 0;
+        }
+        Sprite* frame = animatedSprite->frames.at(animatedSprite->frame).get();
+        frame->position = animatedSprite->position;
+        frame->localPosition = animatedSprite->localPosition;
+        frame->size = animatedSprite->size;
+        frame->visible = animatedSprite->visible;
+        drawSprite(*frame);
+      }
+    }
     SDL_RenderPresent(SDLRenderer);
   }
 
